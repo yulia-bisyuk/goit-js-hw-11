@@ -1,26 +1,32 @@
 import './sass/main.scss';
+import axios from 'axios';
 import bootstrap from 'bootstrap';
 import Notiflix from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
-let lightbox = new SimpleLightbox('.gallery a');
 const queryString = require('query-string');
 const refs = {
     gallery: document.querySelector('.gallery'),
     input: document.querySelector('input'),
-    searchingBtn: document.querySelector('.btn-outline-success'),
-    loadingBtn: document.querySelector('.btn-secondary'),
+    searchBtn: document.querySelector('.btn-outline-success'),
+    loadMoreBtn: document.querySelector('.btn-success'),
 }
 
-refs.searchingBtn.addEventListener('click', onSearchSubmit);
+refs.searchBtn.addEventListener('click', onSearchSubmit);
+refs.input.addEventListener('change', onInputChange);
+refs.loadMoreBtn.addEventListener('click', onSearchSubmit);
 
+let lightbox = new SimpleLightbox('.gallery a');
 let currentPage = 1;
+let hitsPerPage = 100;
+
 
 async function fetchPictures() {
 
     const API_KEY = '25297171-b070f342ccd33435260198644';
-    const BASE_URL = 'https://pixabay.com/api/';
+    axios.defaults.baseURL = 'https://pixabay.com/api/';
+  
 
     const params = {
         q: refs.input.value,
@@ -28,19 +34,27 @@ async function fetchPictures() {
         orientation: 'horizontal',
         safesearch: true,
         page: currentPage,
-        per_page: 40,
+        per_page: hitsPerPage,
     };
     const searchParams = queryString.stringify(params);
+    console.log(searchParams);
 
-    refs.gallery.innerHTML = '';
+    if (!refs.input.value) return;
+
     try {
-    const data = await fetch(`${BASE_URL}?key=${API_KEY}&${searchParams}`);
-        const pictures = await data.json();
+        const response = await axios.get(`?key=${API_KEY}&${searchParams}`);
+        // console.log(data);
+        const pictures = await response.data;
         console.log(pictures);
-        currentPage +=1;
-        
+            currentPage +=1;
         if (pictures.hits.length === 0) {
             Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
+        } else if ((hitsPerPage * currentPage) > pictures.totalHits) {
+            Notiflix.Notify.warning('We\'re sorry, but you\'ve reached the end of search results.');
+        }
+        else {
+            Notiflix.Notify.info(`Hooray! We found ${pictures.totalHits} images.`);
+            refs.loadMoreBtn.classList.remove('visually-hidden');
         }
         return pictures;
     } catch (error) {
@@ -48,24 +62,36 @@ async function fetchPictures() {
 }
 }
 
-
-function onSearchSubmit(e) {
-    e.preventDefault();
-    fetchPictures()
-        .then(renderMarkup)
-        .then((markup) => {
-            refs.gallery.insertAdjacentHTML('beforeend', markup);
-            lightbox.refresh();
-            refs.loadingBtn.classList.remove('visually-hidden');
-        });
+function onInputChange(e) {
+    
+   const previousInputValue = localStorage.setItem('value', e.currentTarget.value)
+    if (previousInputValue !== e.currentTarget.value) {
+        refs.gallery.innerHTML = '';
+        currentPage = 1;
+        
+    } 
+   
 }
 
+function onSearchSubmit(e) {
+    refs.loadMoreBtn.classList.add('visually-hidden');
+    e.preventDefault();
+    fetchPictures().then(renderMarkup); 
+    
+}
+// function onLoadMoreBtn() {
+//     fetchPictures().then(renderMarkup);
+//         // .then((markup) => {
+//             // refs.gallery.insertAdjacentHTML('beforeend', markup);
+//             // lightbox.refresh();
+//             // refs.loadMoreBtn.classList.remove('visually-hidden');
+//         // });;
+//  }
 
 function renderMarkup(pictures) {
 
-    return pictures.hits.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
-        console.log(webformatURL, likes);
-       
+   const markup = pictures.hits.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => {
+
         return `
         <div class="img-thumb">
         <a href="${largeImageURL}" class="photo-card">
@@ -90,12 +116,12 @@ function renderMarkup(pictures) {
     </p>
   </div>
   </div>
-
-
-        `;
+`;
     }).join('');
+   
+    refs.gallery.insertAdjacentHTML('beforeend', markup);
+    lightbox.refresh();
     
-
-
+    
 }
 
