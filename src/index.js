@@ -5,6 +5,7 @@ import Notiflix from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
+
 const queryString = require('query-string');
 const refs = {
     gallery: document.querySelector('.gallery'),
@@ -20,7 +21,6 @@ refs.loadMoreBtn.addEventListener('click', onSearchSubmit);
 let lightbox = new SimpleLightbox('.gallery a');
 let currentPage = 1;
 let hitsPerPage = 40;
-
 
 async function fetchPictures() {
 
@@ -47,14 +47,19 @@ async function fetchPictures() {
         const pictures = await response.data;
 
         console.log(pictures);
+
+        // do { Notiflix.Notify.info(`Hooray! We found ${pictures.totalHits} images.`);
+        // } while (currentPage === 1)
+        
             currentPage +=1;
         if (pictures.hits.length === 0) {
             Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.');
-        } else if ((hitsPerPage * currentPage) > pictures.totalHits) {
+        }
+        else if ((hitsPerPage * currentPage) > pictures.totalHits) {
+            refs.loadMoreBtn.classList.add('visually-hidden');
             Notiflix.Notify.warning('We\'re sorry, but you\'ve reached the end of search results.');
         }
         else {
-            Notiflix.Notify.info(`Hooray! We found ${pictures.totalHits} images.`);
             refs.loadMoreBtn.classList.remove('visually-hidden');
         }
         return pictures;
@@ -75,29 +80,35 @@ function onInputChange(e) {
 function onSearchSubmit(e) {
     refs.loadMoreBtn.classList.add('visually-hidden');
     e.preventDefault();
-    fetchPictures().then(renderMarkup);
-
+    loadMore();
+    
 }
 
-// function infinityScroll() {
-//     let options = {
-//     root: document.querySelector('body'),
-//     rootMargin: '0px',
-//     threshold: 1.0
-//     }
+function infinityScroll() {
+    let options = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 1.0
+    }
 
-//     const handleObserver = (e) => {
-//         // console.log('item intersecting:', item.isIntersecting);
-//         fetchPictures();
-//     }
-//     const observer = new IntersectionObserver(handleObserver, options);
-//     observer.observe(refs.loadMoreBtn);
-// }
+    const handleObserver = ([item]) => {
+        // console.log('item intersecting:', item.isIntersecting);
+        if (item.isIntersecting) {
+            // console.log('item intersecting:', item.isIntersecting);
+            loadMore();
 
-// function loadMore() {
-//  fetchPictures().then(renderMarkup);
+        }
+    }
+    const observer = new IntersectionObserver(handleObserver, options);
+    observer.observe(refs.loadMoreBtn);
+}
+infinityScroll();
 
-// }
+function loadMore() {
+ 
+ fetchPictures().then(renderMarkup);
+
+}
 
 function renderMarkup(pictures) {
 
@@ -135,4 +146,4 @@ function renderMarkup(pictures) {
     
     
 }
-// infinityScroll();
+
