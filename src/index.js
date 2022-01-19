@@ -19,7 +19,7 @@ refs.loadMoreBtn.addEventListener('click', onSearchSubmit);
 
 let lightbox = new SimpleLightbox('.gallery a');
 let currentPage = 1;
-let hitsPerPage = 100;
+let hitsPerPage = 40;
 
 
 async function fetchPictures() {
@@ -45,6 +45,7 @@ async function fetchPictures() {
         const response = await axios.get(`?key=${API_KEY}&${searchParams}`);
         // console.log(data);
         const pictures = await response.data;
+
         console.log(pictures);
             currentPage +=1;
         if (pictures.hits.length === 0) {
@@ -68,25 +69,35 @@ function onInputChange(e) {
     if (previousInputValue !== e.currentTarget.value) {
         refs.gallery.innerHTML = '';
         currentPage = 1;
-        
     } 
-   
 }
 
 function onSearchSubmit(e) {
     refs.loadMoreBtn.classList.add('visually-hidden');
     e.preventDefault();
-    fetchPictures().then(renderMarkup); 
-    
+    fetchPictures().then(renderMarkup);
+
 }
-// function onLoadMoreBtn() {
-//     fetchPictures().then(renderMarkup);
-//         // .then((markup) => {
-//             // refs.gallery.insertAdjacentHTML('beforeend', markup);
-//             // lightbox.refresh();
-//             // refs.loadMoreBtn.classList.remove('visually-hidden');
-//         // });;
-//  }
+
+// function infinityScroll() {
+//     let options = {
+//     root: document.querySelector('body'),
+//     rootMargin: '0px',
+//     threshold: 1.0
+//     }
+
+//     const handleObserver = (e) => {
+//         // console.log('item intersecting:', item.isIntersecting);
+//         fetchPictures();
+//     }
+//     const observer = new IntersectionObserver(handleObserver, options);
+//     observer.observe(refs.loadMoreBtn);
+// }
+
+// function loadMore() {
+//  fetchPictures().then(renderMarkup);
+
+// }
 
 function renderMarkup(pictures) {
 
@@ -124,4 +135,4 @@ function renderMarkup(pictures) {
     
     
 }
-
+// infinityScroll();
