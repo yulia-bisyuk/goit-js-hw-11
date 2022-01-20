@@ -21,7 +21,7 @@ refs.loadMoreBtn.addEventListener('click', onSearchSubmit);
 
 let lightbox = new SimpleLightbox('.gallery a');
 let currentPage = 1;
-let hitsPerPage = 100;
+let hitsPerPage = 40;
 
 async function fetchPictures() {
 
