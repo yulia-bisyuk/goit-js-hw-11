@@ -104,7 +104,7 @@ function loadMore() {
 }
 
 function renderMarkup(pictures) {
-
+    if (!pictures) return;
     const markup = photoTemplate(pictures.hits);
     refs.gallery.insertAdjacentHTML('beforeend', markup);
     lightbox.refresh();
@@ -114,3 +114,8 @@ function renderMarkup(pictures) {
 function hideLoadingMoreButton() {
     refs.loadMoreBtn.classList.add('visually-hidden');
 }
+
+
+
+
+
