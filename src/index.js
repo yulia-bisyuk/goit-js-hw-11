@@ -7,7 +7,6 @@
 // import photoTemplate from '../src/templates/photos-tmpl.hbs';
 
 // const queryString = require('query-string');
-// const Handlebars = require("handlebars");
 // const refs = {
 //     gallery: document.querySelector('.gallery'),
 //     input: document.querySelector('input'),
@@ -131,7 +130,7 @@ let currentPage = 1;
 let hitsPerPage = 40;
 let query = '';
 
-const Handlebars = require("handlebars");
+// const Handlebars = require("handlebars");
 const refs = {
     form: document.querySelector('form'),
     gallery: document.querySelector('.gallery'),
@@ -148,7 +147,7 @@ function onSearchSubmit(e) {
     hideLoadingMoreButton();
     
     query = e.currentTarget.elements.searchQuery.value;
-    if (query === '') return;
+    if (query.trim() === '') return;
 
     fetchPictures(query, currentPage).then((pictures) => {
        
